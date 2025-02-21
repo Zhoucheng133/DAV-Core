@@ -19,21 +19,21 @@ var (
 )
 
 //export StartServer
-func StartServer(port string, path string, username string, password string) C.int {
+func StartServer(port *C.char, path *C.char, username *C.char, password *C.char) {
 	StopServer()
 	serverLock.Lock()
 	defer serverLock.Unlock()
 
 	serverInstance = &http.Server{
-		Addr: ":" + port,
+		Addr: ":" + C.GoString(port),
 	}
 
 	handler := &webdav.Handler{
-		FileSystem: webdav.Dir(path),
+		FileSystem: webdav.Dir(C.GoString(path)),
 		LockSystem: webdav.NewMemLS(),
 	}
 
-	if username != "" || password != "" {
+	if C.GoString(username) != "" || C.GoString(password) != "" {
 		serverInstance.Handler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			u, p, ok := req.BasicAuth()
 			if !ok {
@@ -41,7 +41,7 @@ func StartServer(port string, path string, username string, password string) C.i
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
-			if u != username || p != password {
+			if u != C.GoString(username) || p != C.GoString(password) {
 				http.Error(w, "WebDAV: need authorized!", http.StatusUnauthorized)
 				return
 			}
@@ -58,11 +58,10 @@ func StartServer(port string, path string, username string, password string) C.i
 	}()
 
 	time.Sleep(100 * time.Millisecond)
-	return 0
 }
 
 //export StopServer
-func StopServer() C.int {
+func StopServer() {
 	serverLock.Lock()
 	defer serverLock.Unlock()
 
@@ -72,11 +71,9 @@ func StopServer() C.int {
 
 		if err := serverInstance.Shutdown(ctx); err != nil {
 			fmt.Printf("Server shutdown error: %v\n", err)
-			return 1
 		}
 		serverInstance = nil
 	}
-	return 0
 }
 
 func main() {
