@@ -38,6 +38,6 @@
 1. 你需要先克隆或者下载本仓库
 2. 生成动态库
    ```bash
-   go build -buildmode=c-shared -o server.dll .    # 生成macOS动态库
+   go build -buildmode=c-shared -o server.dll .    # 生成Windows动态库
    go build -buildmode=c-shared -o server.dylib .  # 生成macOS动态库
    ```
